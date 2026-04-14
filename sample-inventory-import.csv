@@ -1,0 +1,6 @@
+name,sku,category,quantity,unit,costPrice,sellingPrice,reorderPoint,reorderQuantity,description
+Wireless Earbuds Pro,WEP-001,Electronics,120,units,45,75,30,80,High-performance wireless earbuds with noise cancellation
+Organic Coffee Blend,OCB-204,Beverages,220,kg,8,15,50,120,Premium organic coffee sourced from fair trade farms
+Running Shoes X9,RSX-009,Footwear,60,pairs,35,72,20,70,Lightweight running shoes for daily training and racing
+Vitamin D3 Capsules,VDC-112,Health,340,bottles,5,12,40,100,High-potency vitamin D3 supplement for bone health
+Bamboo Notebook Set,BNS-031,Stationery,180,sets,3.5,8,25,60,Recyclable bamboo cover notebook set with 100 pages each
