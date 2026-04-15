@@ -19,7 +19,8 @@ const getInventory = async (req, res) => {
       sortOrder = 'desc',
     } = req.query;
 
-    const query = { isActive: true };
+    const ownerFilter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    const query = { isActive: true, ...ownerFilter };
 
     if (category) query.category = { $regex: category, $options: 'i' };
     if (search) {
@@ -236,7 +237,8 @@ const getProductPrediction = async (req, res) => {
 // @access  Private
 const getAllPredictions = async (req, res) => {
   try {
-    const items = await Inventory.find({ isActive: true });
+    const ownerFilter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    const items = await Inventory.find({ isActive: true, ...ownerFilter });
 
     const predictions = await Promise.all(
       items.map(async (item) => {
@@ -273,7 +275,8 @@ const getAllPredictions = async (req, res) => {
 // @access  Private
 const getDashboardStats = async (req, res) => {
   try {
-    const allItems = await Inventory.find({ isActive: true });
+    const ownerFilter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    const allItems = await Inventory.find({ isActive: true, ...ownerFilter });
 
     const stats = {
       totalProducts: allItems.length,
@@ -295,7 +298,8 @@ const getDashboardStats = async (req, res) => {
     });
 
     // Recent activity (last 10 stock movements)
-    const recentActivity = await StockHistory.find()
+    const activityFilter = req.user.role === 'admin' ? {} : { performedBy: req.user._id };
+    const recentActivity = await StockHistory.find(activityFilter)
       .populate('product', 'name sku')
       .populate('performedBy', 'name')
       .sort('-createdAt')
@@ -454,7 +458,8 @@ const importFromCSV = async (req, res) => {
 // @access  Private
 const getCategories = async (req, res) => {
   try {
-    const categories = await Inventory.distinct('category', { isActive: true });
+    const ownerFilter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    const categories = await Inventory.distinct('category', { isActive: true, ...ownerFilter });
     res.status(200).json({ success: true, categories });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
