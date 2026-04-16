@@ -10,7 +10,6 @@ const InventorySchema = new mongoose.Schema(
     sku: {
       type: String,
       required: [true, 'SKU is required'],
-      unique: true,
       uppercase: true,
       trim: true,
     },
@@ -96,6 +95,9 @@ InventorySchema.virtual('profitMargin').get(function () {
   if (this.sellingPrice === 0) return 0;
   return (((this.sellingPrice - this.costPrice) / this.sellingPrice) * 100).toFixed(2);
 });
+
+// Compound unique index: SKU is unique per user, not globally
+InventorySchema.index({ sku: 1, createdBy: 1 }, { unique: true });
 
 InventorySchema.set('toJSON', { virtuals: true });
 InventorySchema.set('toObject', { virtuals: true });
