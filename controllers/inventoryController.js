@@ -81,7 +81,7 @@ const getInventoryItem = async (req, res) => {
 // @access  Private/Manager+
 const createInventoryItem = async (req, res) => {
   try {
-    req.body.createdBy = req.user.id;
+    req.body.createdBy = req.user._id;
 
     if (req.file) {
       req.body.image = `/uploads/images/${req.file.filename}`;
@@ -98,14 +98,14 @@ const createInventoryItem = async (req, res) => {
         quantityBefore: 0,
         quantityAfter: item.quantity,
         note: 'Initial stock entry',
-        performedBy: req.user.id,
+        performedBy: req.user._id,
       });
     }
 
     res.status(201).json({ success: true, message: 'Product created successfully', item });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: 'SKU already exists' });
+      return res.status(400).json({ success: false, message: 'SKU already exists in your inventory' });
     }
     res.status(500).json({ success: false, message: error.message });
   }
@@ -166,7 +166,7 @@ const updateStock = async (req, res) => {
       quantityBefore,
       quantityAfter: newQuantity,
       note: note || '',
-      performedBy: req.user.id,
+      performedBy: req.user._id,
       referenceId: referenceId || null,
     });
 
@@ -382,7 +382,7 @@ const importFromCSV = async (req, res) => {
 
       try {
         const item = {
-          name: row.name || row.name || '',
+          name: row.name || '',
           sku: (row.sku || '').toUpperCase(),
           category: row.category || '',
           quantity: parseInt(row.quantity || '0', 10) || 0,
@@ -392,7 +392,7 @@ const importFromCSV = async (req, res) => {
           reorderPoint: parseInt(row.reorderpoint || '10', 10) || 10,
           reorderQuantity: parseInt(row.reorderquantity || '50', 10) || 50,
           description: row.description || '',
-          createdBy: req.user.id,
+          createdBy: req.user._id,
         };
 
         if (!item.name || !item.sku || !item.category) {
@@ -400,7 +400,8 @@ const importFromCSV = async (req, res) => {
           continue;
         }
 
-        const existing = await Inventory.findOne({ sku: item.sku });
+        // Scope SKU uniqueness per user so different users can have same SKU
+        const existing = await Inventory.findOne({ sku: item.sku, createdBy: req.user._id });
         if (existing) {
           const before = existing.quantity;
           existing.quantity += item.quantity;
@@ -414,7 +415,7 @@ const importFromCSV = async (req, res) => {
               quantityBefore: before,
               quantityAfter: existing.quantity,
               note: 'CSV Import',
-              performedBy: req.user.id,
+              performedBy: req.user._id,
             });
           }
 
@@ -429,7 +430,7 @@ const importFromCSV = async (req, res) => {
               quantityBefore: 0,
               quantityAfter: item.quantity,
               note: 'CSV Import',
-              performedBy: req.user.id,
+              performedBy: req.user._id,
             });
           }
           results.push({ sku: item.sku, action: 'created' });
